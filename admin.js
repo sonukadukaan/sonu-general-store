@@ -58,7 +58,8 @@ if (!file) {
 
 let reader = new FileReader();
 
-reader.onload = async function () {
+reader.onload =
+    async function () {
     let image = reader.result;
     let category = document.getElementById("category").value;
 
