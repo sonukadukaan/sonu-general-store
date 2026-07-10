@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Admin Panel</title>
+
+<link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+<div class="login" id="loginBox">
+
+<h2>🔐 Admin Login</h2>
+
+<input type="password" id="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+</div>
+
+<div class="admin" id="adminBox" style="display:none;">
+
+<h1>⚙️ Admin Panel</h1>
+
+<h3>📂 नई Category</h3>
+
+<input type="text" id="categoryName" placeholder="Category Name">
+
+<button onclick="addCategory()">Category Save</button>
+
+<hr>
+
+<h3>📦 नया Product</h3>
+
+<input type="text" id="name" placeholder="Product Name">
+
+<input type="text" id="price" placeholder="Price">
+<select id="unit">
+    <option value="pcs">Pieces (pcs)</option>
+    <option value="kg">Kilogram (kg)</option>
+    <option value="g">Gram (g)</option>
+    <option value="L">Liter (L)</option>
+    <option value="ml">Milliliter (ml)</option>
+    <option value="pack">Pack</option>
+</select>
+
+<input type="text" id="stock" placeholder="Stock">
+
+<input type="file" id="image" accept="image/*">
+
+<select id="category">
+</select>
+
+<button onclick="saveProduct()">Product Save</button>
+<hr>
+
+<h3>🗑️ Product List</h3>
+<h3>🗂 Category List</h3>
+
+<div id="categoryList"></div>
+
+<hr>
+<div id="productList"></div>
+
+</div>
+
+<script src="admin.js"></script>
+
+</body>
+</html>
