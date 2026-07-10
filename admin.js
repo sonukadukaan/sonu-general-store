@@ -67,7 +67,7 @@ reader.onload = async function () {
         return;
     }
 
- await db.collection("products").add({
+ await addDoc(collection(db, "products"), {
     name: name,
     price: "₹" + price,
     unit: unit,
@@ -76,36 +76,28 @@ reader.onload = async function () {
     category: category
 });
 
-loadProducts();
+async function loadProducts() {
 
-alert("✅ Product Save Ho Gaya");
+    let box = document.getElementById("productList");
+    box.innerHTML = "";
 
-    document.getElementById("name").value="";
-    document.getElementById("price").value="";
-    document.getElementById("stock").value="";
-    document.getElementById("image").value="";
-    document.getElementById("unit").selectedIndex = 0;
-};
-reader.readAsDataURL(file);
-}
-async function loadCategories() {
+    const snapshot = await getDocs(collection(db, "products"));
 
-    let snapshot = await getDocs(collection(db, "categories"));
+    snapshot.forEach((docSnap) => {
 
-    let select = document.getElementById("category");
+        const item = docSnap.data();
 
-    select.innerHTML = "";
+        box.innerHTML += `
+        <div style="padding:10px;border:1px solid #ddd;margin:8px 0;border-radius:10px;">
+            <b>${item.name}</b><br>
+            💰 ${item.price}<br>
+            📂 ${item.category}<br><br>
 
-    snapshot.forEach((docItem) => {
-
-        let cat = docItem.data();
-
-        select.innerHTML += `
-        <option value="${cat.name}">
-            ${cat.name}
-        </option>
+            <button onclick="deleteProduct('${docSnap.id}')">
+                🗑️ Delete
+            </button>
+        </div>
         `;
-
     });
 
 }
@@ -141,7 +133,7 @@ async function deleteProduct(id){
 
     if(!confirm("Delete Product?")) return;
 
-    await db.collection("products").doc(id).delete();
+  await deleteDoc(doc(db, "products", id));
 
     alert("✅ Product Delete Ho Gaya");
 
@@ -192,3 +184,8 @@ function loadCategoryList(){
     });
 
 }
+window.login = login;
+window.addCategory = addCategory;
+window.saveProduct = saveProduct;
+window.deleteProduct = deleteProduct;
+window.deleteCategory = deleteCategory;
