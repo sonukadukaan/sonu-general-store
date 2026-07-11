@@ -224,3 +224,6 @@ loadData().then(() => {
     });
 
 });
+window.addToCart = addToCart;
+window.openCart = openCart;
+window.sendWhatsApp = sendWhatsApp;
