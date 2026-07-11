@@ -107,6 +107,7 @@ card.style.display="none";
 
 });
 function addToCart(index){
+  alert("addToCart chal gaya");
 
 let product = products[index];
 
