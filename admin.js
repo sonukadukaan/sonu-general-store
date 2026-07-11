@@ -1,11 +1,13 @@
 import { db } from "./firebase.js";
 
 import {
-collection,
-addDoc,
-getDocs,
-deleteDoc,
-doc
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  where
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 const ADMIN_PASSWORD = "S123456";
 
@@ -43,39 +45,77 @@ async function addCategory() {
 
 }
 
-function saveProduct() {
+async function saveProduct() {
 
     let name = document.getElementById("name").value.trim();
     let price = document.getElementById("price").value.trim();
     let stock = document.getElementById("stock").value.trim();
     let unit = document.getElementById("unit").value;
-let file = document.getElementById("image").files[0];
-
-if (!file) {
-    alert("Image Select Karo");
-    return;
-}
-
-let reader = new FileReader();
-
-reader.onload =
-    async function () {
-    let image = reader.result;
     let category = document.getElementById("category").value;
+    let file = document.getElementById("image").files[0];
 
-    if(name==="" || price===""){
-        alert("Product Name aur Price likhiye");
+    if (!file) {
+        alert("Image Select Karo");
         return;
     }
 
- await addDoc(collection(db, "products"), {
-    name: name,
-    price: "₹" + price,
-    unit: unit,
-    stock: stock,
-    image: image,
-    category: category
-});
+    let reader = new FileReader();
+
+    reader.onload = async function () {
+
+        let image = reader.result;
+
+        if (name === "" || price === "") {
+            alert("Product Name aur Price likhiye");
+            return;
+        }
+
+        await addDoc(collection(db, "products"), {
+            name: name,
+            price: "₹" + price,
+            unit: unit,
+            stock: stock,
+            image: image,
+            category: category
+        });
+
+        alert("✅ Product Save Ho Gaya");
+
+        loadProducts();
+
+        document.getElementById("name").value = "";
+        document.getElementById("price").value = "";
+        document.getElementById("stock").value = "";
+        document.getElementById("image").value = "";
+        document.getElementById("unit").selectedIndex = 0;
+
+    };
+
+    reader.readAsDataURL(file);
+}
+    
+  async function loadCategories() {
+
+    const snapshot = await getDocs(collection(db, "categories"));
+    alert("Categories: " + snapshot.size);
+
+    let select = document.getElementById("category");
+
+    select.innerHTML = "";
+
+    snapshot.forEach((docSnap) => {
+
+        const cat = docSnap.data();
+
+        select.innerHTML += `
+            <option value="${cat.name}">
+                ${cat.name}
+            </option>
+        `;
+
+    });
+
+}
 
 async function loadProducts() {
 
@@ -103,32 +143,6 @@ async function loadProducts() {
 
 }
 
-loadCategories();
-async function loadProducts() {
-
-    let box = document.getElementById("productList");
-    box.innerHTML = "";
-
-    const snapshot = await db.collection("products").get();
-
-    snapshot.forEach((doc) => {
-
-        const item = doc.data();
-
-        box.innerHTML += `
-        <div style="padding:10px;border:1px solid #ddd;margin:8px 0;border-radius:10px;">
-            <b>${item.name}</b><br>
-            💰 ${item.price}<br>
-            📂 ${item.category}<br><br>
-
-            <button onclick="deleteProduct('${doc.id}')">
-            🗑️ Delete
-            </button>
-        </div>
-        `;
-    });
-
-}
 
 async function deleteProduct(id){
 
@@ -141,31 +155,44 @@ async function deleteProduct(id){
     loadProducts();
 }
 
+loadCategories();
+console.log("Loading Categories...");
 loadProducts();
 loadCategoryList();
-function deleteCategory(index){
+async function deleteCategory(categoryName){
 
     if(!confirm("Delete Category?")) return;
 
-    let categories = JSON.parse(localStorage.getItem("categories")) || [];
-let deletedCategory = categories[index];
+    const q = query(
+        collection(db, "categories"),
+        where("name", "==", categoryName)
+    );
 
-let products = JSON.parse(localStorage.getItem("products")) || [];
+    const snapshot = await getDocs(q);
+    alert(snapshot.size);
 
-products = products.filter(item => item.category !== deletedCategory);
+    for (const docSnap of snapshot.docs) {
+        try {
+    await deleteDoc(doc(db, "categories", docSnap.id));
+    alert("Deleted");
+} catch (e) {
+    alert(e.message);
+}
+    }
 
-localStorage.setItem("products", JSON.stringify(products));
-    categories.splice(index,1);
-
-    localStorage.setItem("categories", JSON.stringify(categories));
+    alert("✅ Category Delete Ho Gayi");
 
     loadCategories();
     loadCategoryList();
-    loadProducts();
 }
-function loadCategoryList(){
+async function loadCategoryList(){
 
-    let categories = JSON.parse(localStorage.getItem("categories")) || [];
+    let categories = [];
+    const snapshot = await getDocs(collection(db, "categories"));
+
+snapshot.forEach(docSnap => {
+    categories.push(docSnap.data());
+});
 
     let box = document.getElementById("categoryList");
 
@@ -175,9 +202,9 @@ function loadCategoryList(){
 
         box.innerHTML += `
         <div style="padding:10px;border:1px solid #ddd;margin:8px 0;border-radius:10px;">
-            <b>${cat}</b>
+            <b>${cat.name}</b>
 
-            <button onclick="deleteCategory(${index})" style="float:right;">
+             <button onclick="deleteCategory('${cat.name}')" style="float:right;">
                 🗑 Delete
             </button>
         </div>
